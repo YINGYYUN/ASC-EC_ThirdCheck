@@ -32,11 +32,12 @@
 .\objects\main.o: .\System\Timer.h
 .\objects\main.o: .\Hardware\LED.h
 .\objects\main.o: .\Hardware\Key.h
-.\objects\main.o: .\Hardware\OLED.h
-.\objects\main.o: .\Hardware\OLED_Data.h
 .\objects\main.o: .\Hardware\Serial.h
 .\objects\main.o: D:\KeilC51\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\main.o: .\Hardware\Motor.h
+.\objects\main.o: .\Hardware\OLED.h
+.\objects\main.o: .\Hardware\OLED_Data.h
+.\objects\main.o: .\Hardware\LineSensor.h
 .\objects\main.o: D:\KeilC51\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: D:\KeilC51\ARM\ARMCC\Bin\..\include\math.h
 .\objects\main.o: D:\KeilC51\ARM\ARMCC\Bin\..\include\stdlib.h

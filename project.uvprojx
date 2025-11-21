@@ -745,6 +745,16 @@
               <FileType>5</FileType>
               <FilePath>.\Hardware\OLED_Data.h</FilePath>
             </File>
+            <File>
+              <FileName>LineSensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\LineSensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>LineSensor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\LineSensor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

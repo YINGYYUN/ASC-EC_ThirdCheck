@@ -5,10 +5,10 @@
 
 #include "LED.h"
 #include "Key.h"
-#include "OLED.h"
 #include "Serial.h"
 #include "Motor.h"
-
+#include "OLED.h"
+#include "LineSensor.h"
 
 #include <string.h>
 #include <math.h>
@@ -30,9 +30,10 @@ int main(void)
 
 	LED_Init();
 	Key_Init();
-	OLED_Init();
 	Serial_Init();
 	Motor_Init();
+	OLED_Init();
+	LineSensor_Init();
 	
 	Timer_Init();
 	
@@ -42,7 +43,11 @@ int main(void)
 //	OLED_Printf(0, 32, OLED_8X16,"RxPacket");
 //	
 //	OLED_Update();
-	
+
+
+
+
+/* =================== [START] 菜单初始化模块 [START] =================== */	
 	char Main_Menu[][17] = {"Tracking Mode", "Manual Mode"};
 	#define F_Mian_Menu				0
 	#define F_Tracking_Mode			1
@@ -68,8 +73,13 @@ int main(void)
 	printf("[display,16,16,%s],", Main_Menu[0]);
 	printf("[display,16,32,%s],", Main_Menu[1]);
 	printf("[display,0,%d,>]", 16 * Main_Menu_Location);
+/* =================== [END] 菜单初始化模块 [END] =================== */	
+
+
 	
 	
+	//存放红外对射式传感器数据
+	uint8_t sensorData[4];
 	
 	while(1)
 	{
@@ -237,19 +247,25 @@ int main(void)
 				
 				switch(FUNCTION_State)
 				{
+					//循迹模式
 					case F_Tracking_Mode:
 						OLED_Clear();
 					
 						OLED_Printf(0, 0, OLED_8X16, "Tracking Mode");
+						OLED_Printf(0, 16, OLED_8X16, "M2134:%d %d %d %d",
+								sensorData[1], sensorData[0], sensorData[2], sensorData[3]);
 						
 						OLED_Update();
 						
 						printf("[display-clear]");
 					
 						printf("[display,0,0,Tracking Mode]");
+						printf("[display,0,16,M2134:%d %d %d %d]", 
+								sensorData[1], sensorData[0], sensorData[2], sensorData[3]);					
 					
 						break;
 					
+					//手动模式
 					case F_Manual_Mode:
 						OLED_Clear();
 					
@@ -316,7 +332,20 @@ int main(void)
 				break;
 			
 			case F_Tracking_Mode:
+				//传感器数据读取
+				LineSensor_Read(sensorData);
+			
+				OLED_Printf(0, 16, OLED_8X16, "M2134:%d %d %d %d",
+						sensorData[1], sensorData[0], sensorData[2], sensorData[3]);
+			
+				//传感器示意图 [M2]			 [M1] [M3]			[M4]
 				
+				OLED_Update();
+				
+				printf("[display,0,16,M2134:%d %d %d %d]", 
+						sensorData[1], sensorData[0], sensorData[2], sensorData[3]);					
+			
+			
 			
 				break;
 			
