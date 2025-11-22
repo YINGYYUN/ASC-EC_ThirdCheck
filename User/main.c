@@ -44,6 +44,11 @@ uint8_t Confirm_sensorData_Flag = 1;
 uint8_t Pre_Flag = F_Go_Ahead;
 uint8_t Cur_Flag = F_Go_Ahead;
 
+uint16_t CrossRoad_Delay_TimeTicks = 0;
+uint16_t SingleLine_Delay_TimeTicks = 0;
+uint16_t SingleLine_CoolDown_TimeTicks = 0;
+uint8_t SingleLine_Confirm_Flag = 0;
+
 uint8_t Tracking_Mode_ENABLE = 0;
 
 void Handle_Tracking_Control(void);
@@ -423,192 +428,259 @@ void Handle_Tracking_Control(void)
 	X3 = Out_sensorData[2];
 	X4 = Out_sensorData[3];
 	
-	if ( X1 == 1 &&
-		 X2 == 0 &&
-		 X3 == 0 &&
-		 X4 == 1)
+	if(!CrossRoad_Delay_TimeTicks && !SingleLine_Delay_TimeTicks)
 	{
-		Go_Ahead();
-		
-		Cur_Flag = F_Go_Ahead;
-		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Go_Ahead]");
+		if ( X1 == 0 &&
+			 X2 == 0 &&
+			 X3 == 0 &&
+			 X4 == 0)
+		{
+			Go_Ahead();
+			
+			CrossRoad_Delay_TimeTicks = 500;
+			
+			Cur_Flag = F_Go_Ahead;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Go_Ahead]");
 	}
-//	else 
-//	if ( X1 == 1 &&
-//		 X2 == 1 &&
-//		 X3 == 1 &&
-//		 X4 == 1)
-//	{
-//		Go_Ahead();
-//		
-//		Cur_Flag = F_Go_Ahead;
-//		
-//		OLED_Printf(0, 48, OLED_8X16, "                ");
-//		OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
-//		OLED_Update();
-////		printf("[display,0,48,                ]");
-////		printf("[display,0,48,Go_Ahead]");
-//	}
-	else 
-	if ( X1 == 0 &&
-		 X2 == 0 &&
-		 X3 == 0 &&
-		 X4 == 0)
-	{
-		Go_Ahead();
+//		else 
+//		if ( X1 == 1 &&
+//			 X2 == 1 &&
+//			 X3 == 1 &&
+//			 X4 == 1)
+//		{
+//			Go_Ahead();
+//			
+//			Cur_Flag = F_Go_Ahead;
+//			SingleLine_Confirm_Flag = 0;
+//	
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Go_Ahead]");
+//		}
+		else 
+		if ( X1 == 1 &&
+			X2 == 0 &&
+			X3 == 0 &&
+			X4 == 1)
+		{
+			Go_Ahead();
 		
-		Cur_Flag = F_Go_Ahead;
+			Cur_Flag = F_Go_Ahead;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Go_Ahead]");
+		}
+		else 
+		if ( X1 == 1 &&
+			 X2 == 0 &&
+			 X3 == 1 &&
+			 X4 == 1)
+		{
+			Turn_Left();
 		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Go_Ahead]");
-	}
-	else 
-	if ( X1 == 1 &&
-		 X2 == 0 &&
-		 X3 == 1 &&
-		 X4 == 1)
-	{
-		Turn_Left();
+			Cur_Flag = F_Turn_Left;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Turn_Left");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Turn_Left]");
+		}
+		else 
+		if ( X1 == 1 &&
+			 X2 == 1 &&
+			 X3 == 0 &&
+			 X4 == 1)
+		{
+			Turn_Right();
 		
-		Cur_Flag = F_Turn_Left;
+			Cur_Flag = F_Turn_Right;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Turn_Right");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Turn_Right]");
+		}
+		else 
+		if ( X1 == 0 &&
+			 X2 == 0 &&
+			 X3 == 1 &&
+			 X4 == 1)
+		{
+			Self_Left2();
 		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Turn_Left");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Turn_Left]");
-	}
-	else 
-	if ( X1 == 1 &&
-		 X2 == 1 &&
-		 X3 == 0 &&
-		 X4 == 1)
-	{
-		Turn_Right();
+			Cur_Flag = F_Self_Left2;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Self_Left2");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Self_Left]");
+		}
+		else 
+		if ( X1 == 1 &&
+			 X2 == 1 &&
+			 X3 == 0 &&
+			 X4 == 0)
+		{
+			Self_Right2();
 		
-		Cur_Flag = F_Turn_Right;
+			Cur_Flag = F_Self_Right2;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Self_Right2");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Self_Right]");
+		}
+		if ( X1 == 0 &&
+			 X2 == 0 &&
+			 X3 == 0 &&
+			 X4 == 1)
+		{
+			//uint16_t SingleLine_Delay_TimeTicks = 0;
+			//uint16_t SingleLine_CoolDown_TimeTicks = 0;
+			//uint8_t SingleLine_Confirm_Flag = 0;
+
+			//处在判定冷却时间
+			if (SingleLine_CoolDown_TimeTicks)
+			{
+				Self_Left1();
+				
+				Cur_Flag = F_Self_Left1;
+			}
+			else if (SingleLine_Confirm_Flag == 0)
+			{
+				SingleLine_Delay_TimeTicks = 20;
+				
+				Go_Ahead();
 		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Turn_Right");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Turn_Right]");
-	}
-	else 
-	if ( X1 == 0 &&
-		 X2 == 0 &&
-		 X3 == 1 &&
-		 X4 == 1)
-	{
-		Self_Left2();
+				Cur_Flag = F_Go_Ahead;
+				
+				SingleLine_Confirm_Flag = 1;
+			}
+			//确认应该转弯
+			else if (SingleLine_Confirm_Flag == 1)
+			{
+				Self_Left1();
+				
+				Cur_Flag = F_Self_Left1;
+				
+				SingleLine_Confirm_Flag = 0;
+				
+				SingleLine_CoolDown_TimeTicks = 400;
+			}
+			
+
+
 		
-		Cur_Flag = F_Self_Left2;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Self_Left1");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Self_Left]");
+		}
+		else 
+		if ( X1 == 1 &&
+			 X2 == 0 &&
+			 X3 == 0 &&
+			 X4 == 0)
+		{
+			if (SingleLine_CoolDown_TimeTicks)
+			{
+				Self_Right1();
+				
+				Cur_Flag = F_Self_Right1;
+			}
+			else if (SingleLine_Confirm_Flag == 0)
+			{
+				SingleLine_Delay_TimeTicks = 20;
+				
+				Go_Ahead();
 		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Self_Left2");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Self_Left]");
-	}
-	else 
-	if ( X1 == 1 &&
-		 X2 == 1 &&
-		 X3 == 0 &&
-		 X4 == 0)
-	{
-		Self_Right2();
+				Cur_Flag = F_Go_Ahead;
+				
+				SingleLine_Confirm_Flag = 1;
+			}
+			//确认应该转弯
+			else if (SingleLine_Confirm_Flag == 1)
+			{
+				Self_Right1();
+				
+				Cur_Flag = F_Self_Right1;
+				
+				SingleLine_Confirm_Flag = 0;
+				
+				SingleLine_CoolDown_TimeTicks = 400;
+			}
+			
+			
 		
-		Cur_Flag = F_Self_Right2;
+			
 		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Self_Right2");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Self_Right]");
-	}
-	if ( X1 == 0 &&
-		 X2 == 0 &&
-		 X3 == 0 &&
-		 X4 == 1)
-	{
-		Self_Left1();
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Self_Right1");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Self_Right]");
+		}
+		if ( X1 == 0 &&
+			 X2 == 1 &&
+			 X3 == 1 &&
+			 X4 == 1)
+		{
+			Self_Left1();
 		
-		Cur_Flag = F_Self_Left1;
+			Cur_Flag = F_Self_Left1;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Self_Left1");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Self_Left]");
+		}
+		else 
+		if ( X1 == 1 &&
+			 X2 == 1 &&
+			 X3 == 1 &&
+			 X4 == 0)
+		{
+			Self_Right1();
 		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Self_Left1");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Self_Left]");
-	}
-	else 
-	if ( X1 == 1 &&
-		 X2 == 0 &&
-		 X3 == 0 &&
-		 X4 == 0)
-	{
-		Self_Right1();
-		
-		Cur_Flag = F_Self_Right1;
-		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Self_Right1");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Self_Right]");
-	}
-	if ( X1 == 0 &&
-		 X2 == 1 &&
-		 X3 == 1 &&
-		 X4 == 1)
-	{
-		Self_Left1();
-		
-		Cur_Flag = F_Self_Left1;
-		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Self_Left1");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Self_Left]");
-	}
-	else 
-	if ( X1 == 1 &&
-		 X2 == 1 &&
-		 X3 == 1 &&
-		 X4 == 0)
-	{
-		Self_Right1();
-		
-		Cur_Flag = F_Self_Right1;
-		
-		OLED_Printf(0, 48, OLED_8X16, "                ");
-		OLED_Printf(0, 48, OLED_8X16, "Self_Right1");
-		OLED_Update();
-//		printf("[display,0,48,                ]");
-//		printf("[display,0,48,Self_Right]");
-	}
-//	else
-//	{
-//		Go_Ahead();
-//		
-//		Cur_Flag = F_Go_Ahead;
-//		
-//		OLED_Printf(0, 48, OLED_8X16, "                ");
-//		OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
-//		OLED_Update();
-////		printf("[display,0,48,                ]");
-////		printf("[display,0,48,Go_Ahead]");
-//	}
+			Cur_Flag = F_Self_Right1;
+			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Self_Right1");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Self_Right]");
+		}
+//		else
+//		{
+//			Go_Ahead();
+//			
+//			Cur_Flag = F_Go_Ahead;
+//			SingleLine_Confirm_Flag = 0;
+//			OLED_Printf(0, 48, OLED_8X16, "                ");
+//			OLED_Printf(0, 48, OLED_8X16, "Go_Ahead");
+//			OLED_Update();
+//			printf("[display,0,48,                ]");
+//			printf("[display,0,48,Go_Ahead]");
+//		}
 	
+	}
+		
 	//如果更新了状态，通过蓝牙上传
 	if (Pre_Flag != Cur_Flag)
 	{
@@ -666,7 +738,7 @@ void Handle_Manual_Control(void)
 /* =================== [END] 手动摇杆控制模块 [END] =================== */
 
 
-uint16_t TIM1_TimeTick;
+uint16_t TIM1_TimeTicks;
 
 void TIM1_UP_IRQHandler(void)
 {
@@ -675,11 +747,18 @@ void TIM1_UP_IRQHandler(void)
 	{
 		Key_Tick();
 		
+		//十字路口强制直行冷却
+		if(CrossRoad_Delay_TimeTicks)CrossRoad_Delay_TimeTicks --;
+		//0001/1000判定延时
+		if(SingleLine_Delay_TimeTicks)SingleLine_Delay_TimeTicks --;
+		//0001/1000延时判定的冷却
+		if(SingleLine_CoolDown_TimeTicks)SingleLine_CoolDown_TimeTicks --;
+		
 		if (Tracking_Mode_ENABLE)
 		{
-			TIM1_TimeTick ++;
+			TIM1_TimeTicks ++;
 			
-			if(TIM1_TimeTick > 10)
+			if(TIM1_TimeTicks > 10)
 			{
 			//传感器数据读取
 			//Pre_sensorData
@@ -698,10 +777,10 @@ void TIM1_UP_IRQHandler(void)
 			}
 			memcpy(Pre_sensorData, Cur_sensorData, 4);
 			
-			if(Confirm_sensorData_Flag >= 3)memcpy(Out_sensorData, Cur_sensorData, 4);
+			if(Confirm_sensorData_Flag >= 2)memcpy(Out_sensorData, Cur_sensorData, 4);
 			
 			
-			TIM1_TimeTick = 0;				
+			TIM1_TimeTicks = 0;				
 			}
 		}
 		//清除标志位
