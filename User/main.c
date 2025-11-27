@@ -62,7 +62,7 @@ static int8_t W23 = 1;
 uint8_t Cur_Flag, Pre_Flag;
 
 // 基础速度（全局默认 - 与车上固定 PWM 行为接近）
-static int16_t BASE_SPEED = 80; // 建议初始高速组
+static int16_t BASE_SPEED = 90; // 建议初始高速组
 
 void Handle_Tracking_Control(void);
 
