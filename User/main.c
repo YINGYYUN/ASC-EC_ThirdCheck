@@ -33,17 +33,20 @@ uint8_t g_joystick_data_ready = 0;//数据就绪标志
 void Handle_Manual_Control(void);
 
 //存放红外对射式传感器数据
-//uint8_t Pre_sensorData[4];
+uint8_t Pre_sensorData[4];
 uint8_t Cur_sensorData[4];
-//uint8_t Out_sensorData[4];
+uint8_t Out_sensorData[4];
 
 //数据帧确认与状态（用于定时判定十字路口、单线等）
 uint8_t Confirm_sensorData_Flag = 1;
 
 uint8_t Tracking_Mode_ENABLE = 0;
 
+uint8_t Tracking_Error_Flag;
+uint16_t Tracking_Error_Timeticks;
+
 // PID参数定义
-static float KP = 1.0f;   
+static float KP = 6.6f;   
 // 比例系数（范围0.5~5.0，步距0.1）
 static float KI = 0.0f;   
 // 积分系数（范围0~0.5，步距0.01）
@@ -56,7 +59,14 @@ static int8_t W14 = 4;
 static int8_t W23 = 1;     
 // X2权重（2~5）
 
+uint8_t Cur_Flag, Pre_Flag;
+
+// 基础速度（全局默认 - 与车上固定 PWM 行为接近）
+static int16_t BASE_SPEED = 70; // 建议初始高速组
+
 void Handle_Tracking_Control(void);
+
+uint16_t i;
 
 int main(void)
 {	
@@ -277,9 +287,9 @@ int main(void)
 //						OLED_Update();
 						printf("[display-clear]");
 						printf("[display,0,0,Tracking Mode]");
-						printf("[display,0,16,|2|  |1||3|  |4|]");
-						printf("[display,0,32, %d    %d  %d    %d ",
-								Cur_sensorData[1], Cur_sensorData[0], Cur_sensorData[2], Cur_sensorData[3]);
+//						printf("[display,0,16,|2|  |1||3|  |4|]");
+//						printf("[display,0,32, %d    %d  %d    %d ",
+//								Cur_sensorData[1], Cur_sensorData[0], Cur_sensorData[2], Cur_sensorData[3]);
 						break;
 					
 					//手动模式
@@ -347,11 +357,6 @@ int main(void)
 				Tracking_Mode_ENABLE = 1;
 			
 			
-//				OLED_Printf(0, 32, OLED_8X16, " %d    %d  %d    %d ",
-//						Cur_sensorData[1], Cur_sensorData[0], Cur_sensorData[2], Cur_sensorData[3]);
-				printf("[display,0,32, %d    %d  %d    %d ]",
-							Cur_sensorData[1], Cur_sensorData[0], Cur_sensorData[2], Cur_sensorData[3]);
-			
 				//传感器示意图 [M2]			 [M1] [M3]			[M4]
 				
 //				OLED_Update();			
@@ -382,7 +387,6 @@ int main(void)
 }//int main(void)
 
 uint8_t X1, X2, X3, X4;
-
 /* =================== [START] 自动巡线控制模块 [START] =================== */
 void Handle_Tracking_Control(void)
 {
@@ -397,7 +401,7 @@ void Handle_Tracking_Control(void)
 //		Confirm_sensorData_Flag = 1;
 //	}
 //	memcpy(Pre_sensorData, Cur_sensorData, 4);
-	
+//	
 //	if(Confirm_sensorData_Flag >= 2)memcpy(Out_sensorData, Cur_sensorData, 4);
     
     // 传感器位置映射
@@ -407,85 +411,95 @@ void Handle_Tracking_Control(void)
 //    X4 = Out_sensorData[3];  // 右外侧
 	
 	X1 = Cur_sensorData[1];  // 左外侧
-    X2 = Cur_sensorData[0];  // 左内侧
-    X3 = Cur_sensorData[2];  // 右内侧
-    X4 = Cur_sensorData[3];  // 右外侧
+	X2 = Cur_sensorData[0];  // 左内侧
+	X3 = Cur_sensorData[2];  // 右内侧
+	X4 = Cur_sensorData[3];  // 右外侧
 	
-	printf("[display,0,32, %d    %d  %d    %d ]",X1, X2, X3, X4);
-
-	// -------- 巡线PID控制开始 --------
-	// 说明：
-	// 传感器逻辑：1 表示白，0 表示黑（目标为沿黑线行驶，期望 error -> 0）
-	// 偏差计算（用户提供的权重公式）：
-	// error = X1*(-W14) + X2*(-W23) + X3*W23 + X4*W14
-	// 当黑线在正中间时，误差应接近0；向左为负，向右为正。
-
-	// 基础速度（可通过蓝牙或宏调整）
-	static int16_t BASE_SPEED = 30; // 默认基速（0~MAX_SPEED），根据需要调整
+//	printf("[display,0,32, %d    %d  %d    %d ]",X1, X2, X3, X4);
 
 	// PID 状态（保持在函数间）
-	static float prev_error = 0.0f;
-	static float integral = 0.0f;
+	if(!(X1 == 1 && X2 == 1 && X3 == 1 && X4 == 1))
+	{
+		if ( X1 == 0 &&
+			 X2 == 1 &&
+			 X3 == 1 &&
+			 X4 == 1)
+		{
+			Cur_Flag = F_Self_Right1;
+			Self_Right1();
+			if(Pre_Flag != Cur_Flag)
+			{
+				printf("%d\n",i);
+				i = 0;
+				Pre_Flag = Cur_Flag;
+			}
+			return;
+		}
+		else 
+		if ( X1 == 1 &&
+			 X2 == 1 &&
+			 X3 == 1 &&
+			 X4 == 0)
+		{
+			Cur_Flag = F_Self_Left1;
+			Self_Left1();
+			if(Pre_Flag != Cur_Flag)
+			{
+				printf("%d\n",i);
+				i = 0;
+				Pre_Flag = Cur_Flag;
+			}
+			return;
+		}
+		Tracking_Error_Flag = 0;
+		
+		static float prev_error = 0.0f;
+		static float integral = 0.0f;
 
-	// 计算误差（按要求的权重组合）
-	float error = (float)(- (int)W14 * (int)X1
-						 - (int)W23 * (int)X2
-						 + (int)W23 * (int)X3
-						 + (int)W14 * (int)X4);
+		// 计算误差（按要求的权重组合）
+		float error = (float)(- (int)W14 * (int)X1
+							 - (int)W23 * (int)X2
+							 + (int)W23 * (int)X3
+							 + (int)W14 * (int)X4);
 
-	// 积分项累加并限幅（防止积分饱和）
-	integral += error;
-	const float INTEGRAL_LIMIT = 200.0f;
-	if (integral > INTEGRAL_LIMIT) integral = INTEGRAL_LIMIT;
-	if (integral < -INTEGRAL_LIMIT) integral = -INTEGRAL_LIMIT;
+		// 积分项累加并限幅（防止积分饱和）
+		integral += error;
+		const float INTEGRAL_LIMIT = 200.0f;
+		if (integral > INTEGRAL_LIMIT) integral = INTEGRAL_LIMIT;
+		if (integral < -INTEGRAL_LIMIT) integral = -INTEGRAL_LIMIT;
 
-	// 微分项（位置式PID使用当前误差与上次误差差值）
-	float derivative = error - prev_error;
+		// 微分项（位置式PID使用当前误差与上次误差差值）
+		float derivative = error - prev_error;
 
-	// PID 输出（作为转向修正量）
-	float pid_output = KP * error + KI * integral + KD * derivative;
+		// PID 输出（作为转向修正量）
+		float pid_output = KP * error + KI * integral + KD * derivative;
 
-	// 保存当前误差供下次微分使用
-	prev_error = error;
+		// 保存当前误差供下次微分使用
+		prev_error = error;
 
-	// 计算左右轮目标速度
-	int16_t left_speed  = (int16_t)roundf((float)BASE_SPEED + pid_output);
-	int16_t right_speed = (int16_t)roundf((float)BASE_SPEED - pid_output);
+		// 计算左右轮目标速度
+		int16_t left_speed  = (int16_t)roundf((float)BASE_SPEED + pid_output);
+		int16_t right_speed = (int16_t)roundf((float)BASE_SPEED - pid_output);
 
-	// 对速度进行限幅（电机驱动允许范围 -MAX_SPEED..MAX_SPEED）
-	if (left_speed > MAX_SPEED) left_speed = MAX_SPEED;
-	if (left_speed < -MAX_SPEED) left_speed = -MAX_SPEED;
-	if (right_speed > MAX_SPEED) right_speed = MAX_SPEED;
-	if (right_speed < -MAX_SPEED) right_speed = -MAX_SPEED;
+		// 对速度进行限幅（电机驱动允许范围 -MAX_SPEED..MAX_SPEED）
+		if (left_speed > MAX_SPEED) left_speed = MAX_SPEED;
+		if (left_speed < -MAX_SPEED) left_speed = -MAX_SPEED;
+		if (right_speed > MAX_SPEED) right_speed = MAX_SPEED;
+		if (right_speed < -MAX_SPEED) right_speed = -MAX_SPEED;
 
-	// 输出到电机（M1/M2 接口）
-	Motor_SetPWM1(left_speed);
-	Motor_SetPWM2(right_speed);
-
-	// -------- 巡线PID控制结束 --------
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		// 输出到电机（M1/M2 接口）
+		Motor_SetPWM1(left_speed);
+		Motor_SetPWM2(right_speed);	
+	}
+	else
+	{
+		Tracking_Error_Flag = 1;
+		if (Tracking_Error_Timeticks > 10000)
+		{
+			Motor_SetPWM1(0);
+			Motor_SetPWM2(0);	
+		}
+	}
 }
 /* =================== [END] 自动巡线控制模块 [END] =================== */
 
@@ -535,7 +549,7 @@ void Handle_Manual_Control(void)
 /* =================== [END] 手动摇杆控制模块 [END] =================== */
 
 
-uint16_t TIM1_TimeTicks;
+
 
 void TIM1_UP_IRQHandler(void)
 {
@@ -544,17 +558,17 @@ void TIM1_UP_IRQHandler(void)
 	{
 		Key_Tick();
 		
-		if (Tracking_Mode_ENABLE)
+		i ++;
+		
+		if(Tracking_Error_Flag)
 		{
-			TIM1_TimeTicks ++;
-			
-			if(TIM1_TimeTicks > 100)
-			{					
-			TIM1_TimeTicks = 0;
-
-			
-			}
+			Tracking_Error_Timeticks ++;
 		}
+		else
+		{
+			Tracking_Error_Timeticks = 0;
+		}
+
 		//清除标志位
 		TIM_ClearITPendingBit(TIM1,TIM_IT_Update);
 	}
