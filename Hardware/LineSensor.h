@@ -6,20 +6,20 @@
 #include "stm32f10x.h" // 引入STM32标准库头文件
 
 // --- 引脚定义 ---
-// 根据你的硬件连接修改这里
-#define LINE_SENSOR_X1_PIN     GPIO_Pin_3
+// 修改后的引脚分配：PA2-PA5
+#define LINE_SENSOR_X1_PIN     GPIO_Pin_2
 #define LINE_SENSOR_X1_PORT    GPIOA
 #define LINE_SENSOR_X1_RCC     RCC_APB2Periph_GPIOA
 
-#define LINE_SENSOR_X2_PIN     GPIO_Pin_4
+#define LINE_SENSOR_X2_PIN     GPIO_Pin_3
 #define LINE_SENSOR_X2_PORT    GPIOA
 #define LINE_SENSOR_X2_RCC     RCC_APB2Periph_GPIOA
 
-#define LINE_SENSOR_X3_PIN     GPIO_Pin_5
+#define LINE_SENSOR_X3_PIN     GPIO_Pin_4
 #define LINE_SENSOR_X3_PORT    GPIOA
 #define LINE_SENSOR_X3_RCC     RCC_APB2Periph_GPIOA
 
-#define LINE_SENSOR_X4_PIN     GPIO_Pin_6
+#define LINE_SENSOR_X4_PIN     GPIO_Pin_5
 #define LINE_SENSOR_X4_PORT    GPIOA
 #define LINE_SENSOR_X4_RCC     RCC_APB2Periph_GPIOA
 

@@ -12,31 +12,17 @@ void LineSensor_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    // 使能所有传感器引脚的GPIO时钟
-    RCC_APB2PeriphClockCmd(LINE_SENSOR_X1_RCC |
-                           LINE_SENSOR_X2_RCC |
-                           LINE_SENSOR_X3_RCC |
-                           LINE_SENSOR_X4_RCC, ENABLE);
+    // 使能所有传感器引脚的GPIO时钟（只需要使能一次GPIOA时钟）
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
     // 配置所有引脚为上拉输入模式
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; // 上拉输入
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 
-    // X1
-    GPIO_InitStructure.GPIO_Pin = LINE_SENSOR_X1_PIN;
-    GPIO_Init(LINE_SENSOR_X1_PORT, &GPIO_InitStructure);
-
-    // X2
-    GPIO_InitStructure.GPIO_Pin = LINE_SENSOR_X2_PIN;
-    GPIO_Init(LINE_SENSOR_X2_PORT, &GPIO_InitStructure);
-
-    // X3
-    GPIO_InitStructure.GPIO_Pin = LINE_SENSOR_X3_PIN;
-    GPIO_Init(LINE_SENSOR_X3_PORT, &GPIO_InitStructure);
-
-    // X4
-    GPIO_InitStructure.GPIO_Pin = LINE_SENSOR_X4_PIN;
-    GPIO_Init(LINE_SENSOR_X4_PORT, &GPIO_InitStructure);
+    // 同时配置所有4个引脚
+    GPIO_InitStructure.GPIO_Pin = LINE_SENSOR_X1_PIN | LINE_SENSOR_X2_PIN | 
+                                 LINE_SENSOR_X3_PIN | LINE_SENSOR_X4_PIN;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
 /**
